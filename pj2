@@ -1,0 +1,319 @@
+Script started on 2021-04-18 15:08:41-04:00
+]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ cat Makefile
+Mandelbrot: main.o complex.o mandelbrot.o mandelbrot_print.o
+	gcc -o Mandelbrot main.o complex.o mandelbrot.o mandelbrot_print.o -lm
+
+main.o: main.c complex.h mandelbrot_print.h mandelbrot.h
+	gcc -c main.c
+
+complex.o: complex.c complex.h
+	gcc -c complex.c -lm  
+
+mandelbrot.o: mandelbrot.c complex.h  mandelbrot.h
+	gcc -c mandelbrot.c -lm 
+
+mandelbrot_print.o: mandelbrot_print.c mandelbrot_print.h
+	gcc -c mandelbrot_print.c
+
+clean:
+	rm *.o Mandelbrot
+	ls -FC
+	
+]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ cat mandelbrot.h
+
+//must include complex.h for this function to work.
+//function definition for mandelbrot
+
+complex mandelbrot(complex c, int n);]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ cat mandelbrot.h[Kc
+
+
+#include "complex.h"// typedef for complex, multiplycomplex 
+#include "mandelbrot.h"// function protype for mandelbrot
+
+complex mandelbrot(complex c, int n){
+
+    //define the end statemetn as when n==0 and to return c
+    if(n == 0){
+        return c ;
+    }
+    //define the reucursive loop
+    else{
+        //have the program recurisively apply the formula c*c +c n times 
+        return add_complex(multiply_complex(mandelbrot(c,n-1), mandelbrot(c,n-1)), c);
+    }
+}
+
+
+]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ cat mandelbrot.c[K[K[K[K[K[K[K[K[K[K[K[Kcomplex.h
+
+//type def of complex_t, a complex number
+typedef struct complex_t
+{
+    double x; 
+    double y;
+} complex;
+
+
+//function declarations 
+complex add_complex(complex first, complex secound);  //adds two complex numbers
+complex multiply_complex(complex first, complex secound); // multplies two complex numbers
+double abs_complex(complex c); // calculates absolute value of a complex number
+
+
+]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ cat complex.h[Kv[Kc
+//CS 222, project 2
+//Bradley Frye 
+// 
+//
+//Complex numbers operations 
+
+
+#include<math.h> // sqrt 
+#include "complex.h" // typedef complex_t, function prototypes
+
+complex add_complex(complex first, complex secound){
+
+    //define the double a,b and complex result
+    double a, b;
+    complex result;
+
+    //set a to tbe equal to the x value of the first and secound input complex
+    a = first.x + secound.x;
+    //set b to be equal to the y values of the first and secoung input complex
+    b = secound.y + first.y;
+
+    //set the result x and y to a and b respecfuly 
+    result.x = a;
+    result.y = b;
+
+    //return the result
+    return result;
+
+}
+
+
+//define the multiply_complex function 
+complex multiply_complex(complex first, complex secound){
+
+    //define complex result and the doubles a,b,c, and d
+    complex result;
+    double a, b, c,d;
+
+    //use foil to multiply the two complex numbesr together and set the resulting terms accordingly
+    a = first.x * secound.x;
+    b = first.x * secound.y;
+    c = first.y * secound.x;
+    d = first.y * secound.y;
+
+    //set result.x to a -d and result.y to b + c
+    result.x = a - d;
+    result.y = b + c;
+
+    //return the result complex 
+    return result;
+
+
+}
+
+
+//define the abs_complex function 
+double abs_complex(complex c){
+
+    //define the double result
+    double result;
+    //set result equal to the outple of both terms squared and added to gether 
+    //then square rooted 
+    result = sqrt((c.x * c.x) + (c.y *c.y));
+
+    //return the result 
+    return result;
+}
+
+]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ cat mandelbrot_print.h 
+
+
+//function protype for madelbrot_print
+void mandelbrot_print(int result[60][80]); //print the 60x80 2d array ]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ cat mandelbrot_print.h [K[Kc
+
+#include <stdio.h> //printf 
+
+//defien the mandelbrot_print function 
+void mandelbrot_print(int result[60][80]){
+    
+    //define int y and x to keep track of the position
+    int y, x;
+
+    //first loop goes from 0 to 60 for the y direction
+    for( y = 0; y <= 60; y = y + 1){
+
+        //secound loop goes from 80 to zero for the x direction
+        for( x = 80; x >=1 ; x = x - 1){
+            //check if the current postion is a one or a zero,
+            //all zeros get printed as a empty space while ones
+            //will get printed as # to create the image
+            if( result[y][x] == 1){
+                printf("#");
+            }
+            else{
+                printf(" ");
+            }
+        }
+        //create new line each iteration of the first loop
+        printf("\n");
+
+    }
+}
+]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ main[K[K[K[Kcat main.c
+//CS 222, project 2
+//Bradley Frye 
+// 
+//
+//main function file for mandelbrot 
+
+//standard headers
+#include<stdio.h>
+#include<math.h>
+
+//userdefined headers
+#include "complex.h"
+#include "mandelbrot_print.h"
+#include "mandelbrot.h"
+
+//define main function 
+int
+main(void){
+    //create the 2d array to be 60 by 80 
+    int mend[60][80];
+
+    //define all cordinates constants 
+    double xmin = -2.0;
+    double ymin = -1.12;
+    double xmax = 0.47;
+    double ymax = 1.12;
+
+    //create blank cordinate counters for x and y   
+    int xcount, ycount;
+
+    //start the xcounter at 80 and y counter at 0
+    xcount = 80;
+    ycount = 0;
+
+    //create a loop that will step through the x cordinates with a step of 0.030875
+    for( double curx = xmin; curx <= xmax; curx = curx + 0.030875){
+
+        //create a loop that will step throught the y cordinates with a step of 0.0385
+        for( double cury = ymin; cury <= ymax; cury = cury + 0.0385){
+            
+            //define the complex number c 
+            //set the x and y to the appropiately
+            complex c;
+            c.x = curx; 
+            c.y = cury;
+
+            //define complex result and set it to the mandelbrot of the c and 15
+            complex result;
+            result = mandelbrot(c, 15);
+
+            //set abs to the absolute value of result
+            double abs = abs_complex(result);
+
+            //if the abs is less then 100000 set the current position in the array to 1 
+            //if not then set the psotion to 0
+            if(abs < 10000.0){
+                mend[ycount][xcount] = 1;
+            }
+            else{
+                mend[ycount][xcount] = 0;
+            }
+            // add one the the y count each y interation
+            ycount = ycount + 1;
+
+        }
+
+        //reset the ycount and subtract one from the x count 
+        ycount = 0;
+        xcount = xcount - 1;
+    }   
+
+    //call mandelbrot _print to print the array picture 
+    mandelbrot_print(mend);
+    return(0);
+
+}
+
+
+
+
+
+
+]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ make 
+gcc -c main.c
+gcc -c complex.c -lm  
+gcc -c mandelbrot.c -lm 
+gcc -c mandelbrot_print.c
+gcc -o Mandelbrot main.o complex.o mandelbrot.o mandelbrot_print.o -lm
+]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ ./Mandelbrot 
+                                                                                
+                                                           #                    
+                                                            #                   
+                                                                                
+                                                             ##                 
+                                                             ##                 
+                                                            ####                
+                                                        ######## #              
+                                                         ##########             
+                                                         #########              
+                                                         #########              
+                                                #        ########               
+                                              ###   ################ ##         
+                                             ##########################  ## #   
+                                              ################################  
+                                              ###############################   
+                                              ###############################   
+                                          ##################################    
+                                           ##################################   
+                        #                  ###################################  
+                        #      #          ######################################
+                         ####  ### #      ##################################### 
+                          ############   #####################################  
+                          #############  #######################################
+                         ###################################################### 
+                        ####################################################### 
+                        ######################################################  
+                    #########################################################   
+                   #########################################################    
+       ##   ###############################################################     
+            #      #########################################################    
+                    #########################################################   
+                      # ######################################################  
+                   #    ####################################################### 
+                        ######################################################  
+                          ############# ########################################
+                          ############   #####################################  
+                          ###  ### #      ##################################### 
+                        #      #          ######################################
+                        #                 #################################### #
+                                           ##################################   
+                                           #################################    
+                                            # ###############################   
+                                               ##############################   
+                                              ################################  
+                                             ##########################  ## # # 
+                                              ###   ###################         
+                                                #        ########    #          
+                                                         ########               
+                                                         #########              
+                                                         #########              
+                                                       ######### #              
+                                                         #  ####                
+                                                             ##                 
+                                                             ##                 
+                                                                #               
+                                                            #                   
+                                                           #                    
+                                                          #                     
+    #                                                                           
+        #                                              #                        
+]0;bfrye2@mason:~/Project2[bfrye2@mason Project2]$ exit
+
+Script done on 2021-04-18 15:10:58-04:00
